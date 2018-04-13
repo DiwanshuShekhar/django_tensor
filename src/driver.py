@@ -1,4 +1,3 @@
-import time
 from abc import ABCMeta, abstractmethod
 import tensorflow as tf
 
@@ -8,9 +7,11 @@ class InferenceDriver:
     __metaclass__ = ABCMeta
 
     def __init__(self, checkpoint_file=None,
-                        tensorflow_model=None):
+                        tensorflow_model=None,
+                        model_type=None):
         self.checkpoint_file = checkpoint_file
         self.tensorflow_model = tensorflow_model
+        self.model_type = model_type
 
     @abstractmethod
     def build_user_input(self):
@@ -23,14 +24,17 @@ class InferenceDriver:
         pass
 
     def infer(self):
-        user_input = self.build_user_input()
-        self.tensorflow_model.set_processed_user_data(user_input)
-        predict_op = self.tensorflow_model.get_prediction()
-        saver = tf.train.Saver()
-        with tf.Session() as sess:
-            saver.restore(sess, self.checkpoint_file)
-            sentiment = sess.run(predict_op)
-            return sentiment
+        if self.model_type is None:
+            user_input = self.build_user_input()
+            self.tensorflow_model.set_processed_user_data(user_input)
+            predict_op = self.tensorflow_model.get_prediction()
+            saver = tf.train.Saver()
+            with tf.Session() as sess:
+                saver.restore(sess, self.checkpoint_file)
+                prediction = sess.run(predict_op)
+                return prediction
+
+
 
 
 

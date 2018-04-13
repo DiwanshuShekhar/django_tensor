@@ -4,13 +4,13 @@ class TensorflowConfig(object):
                  embed_len = None,
                  embed_file = None,
                  vocab_processor = None,
-                 tain_batch_size = None,
+                 train_batch_size = None,
                  validation_batch_size = None,
                  train_files = None,  # list of strings
-                 validation_files = None  # list of strings
-                 num_epochs = None
-                 checkpoint_file = None  # string pointing to a checkpoint file
-                 vocabulary = None # string pointing to a json file
+                 validation_files = None,  # list of strings
+                 num_epochs = None,
+                 checkpoint_file = None,  # string pointing to a checkpoint file
+                 vocabulary = None): # string pointing to a json file
                  
         MAX_SENTENCE_LEN = max_sentence_len
         EMBED_LEN = embed_len
