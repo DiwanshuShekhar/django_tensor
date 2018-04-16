@@ -12,5 +12,5 @@ setup(name='django_tensor',
       description ='A framework to deploy your trained tensorflow model in Django',
       long_description=long_description,
       requires=['numpy', 'tensorflow'],
-      packages=['src']
+      packages=['django_tensor']
       )
