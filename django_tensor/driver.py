@@ -28,13 +28,10 @@ class InferenceDriver:
         print(user_input)
         self.tensorflow_model.set_processed_user_data(user_input)
         predict_op = self.tensorflow_model.get_prediction()
-        data_op = self.tensorflow_model.get_processed_user_data()
         saver = tf.train.Saver()
         with tf.Session() as sess:
             saver.restore(sess, self.checkpoint_file)
             prediction = sess.run(predict_op)
-            input_data = sess.run(data_op)
-            print(input_data)
             return prediction
 
 

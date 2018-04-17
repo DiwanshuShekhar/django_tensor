@@ -54,7 +54,6 @@ class SentimentModel(TensorflowModel):
                                                            self.review,
                                                            dtype=tf.float32,
                                                            sequence_length=self.review_len)
-                self.logits = tf.norm(output_states.h, axis=1)
         except ValueError:
             with tf.variable_scope('lstm'):
                 cell_context = tf.nn.rnn_cell.LSTMCell(self.n_neurons, forget_bias=2.0,
@@ -63,7 +62,20 @@ class SentimentModel(TensorflowModel):
                                                            self.review,
                                                            dtype=tf.float32,
                                                            sequence_length=self.review_len)
-                self.logits = tf.norm(output_states.h, axis=1)
+
+        try:
+            with tf.variable_scope('logits', reuse=True):
+                M = tf.get_variable("M")
+        except ValueError:
+            with tf.variable_scope('logits'):
+                print ("Shape of output states {}".format(output_states.h.shape))  # [batch_size, n_neurons]
+                M = tf.get_variable("M", shape=[self.n_neurons, 1],
+                                    trainable=True,
+                                    initializer=tf.truncated_normal_initializer())  # [n_neurons, 1]
+                print ("Shape of M {}".format(M.shape))
+
+        self.logits = tf.matmul(output_states.h, M)
+        print ("Shape of logits at inference {}".format(self.logits.shape))
 
     def _create_predictions(self):
         """
@@ -73,7 +85,7 @@ class SentimentModel(TensorflowModel):
         """
         print(self.logits)
         probabilities = tf.sigmoid(self.logits)
-        predicted_labels = tf.greater_equal(probabilities, 0.85)
+        predicted_labels = tf.greater_equal(probabilities, 0.5)
         return tf.cast(predicted_labels, tf.int64)
 
     def get_processed_user_data(self):
@@ -143,7 +155,7 @@ def q(request):
     end_time = time.time()
 
     result = {}
-    result['prediction'] = prediction[0]
+    result['prediction'] = prediction[0][0]
     result['responseTime'] = end_time - start_time
     jr = json.dumps(result)
 
