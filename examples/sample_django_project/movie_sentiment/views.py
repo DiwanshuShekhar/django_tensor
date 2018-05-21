@@ -46,33 +46,20 @@ class SentimentModel(TensorflowModel):
         This is where Neural Network is built. Should be the same as what was used in training the model
         :return:
         """
-        try:
-            with tf.variable_scope('lstm', reuse=True):
-                cell_context = tf.nn.rnn_cell.LSTMCell(self.n_neurons, forget_bias=2.0,
+        with tf.variable_scope('lstm'):
+            cell_context = tf.nn.rnn_cell.LSTMCell(self.n_neurons, forget_bias=2.0,
                                                        use_peepholes=True, state_is_tuple=True)
-                outputs, output_states = tf.nn.dynamic_rnn(cell_context,
-                                                           self.review,
-                                                           dtype=tf.float32,
-                                                           sequence_length=self.review_len)
-        except ValueError:
-            with tf.variable_scope('lstm'):
-                cell_context = tf.nn.rnn_cell.LSTMCell(self.n_neurons, forget_bias=2.0,
-                                                       use_peepholes=True, state_is_tuple=True)
-                outputs, output_states = tf.nn.dynamic_rnn(cell_context,
+            outputs, output_states = tf.nn.dynamic_rnn(cell_context,
                                                            self.review,
                                                            dtype=tf.float32,
                                                            sequence_length=self.review_len)
 
-        try:
-            with tf.variable_scope('logits', reuse=True):
-                M = tf.get_variable("M")
-        except ValueError:
-            with tf.variable_scope('logits'):
-                print ("Shape of output states {}".format(output_states.h.shape))  # [batch_size, n_neurons]
-                M = tf.get_variable("M", shape=[self.n_neurons, 1],
-                                    trainable=True,
-                                    initializer=tf.truncated_normal_initializer())  # [n_neurons, 1]
-                print ("Shape of M {}".format(M.shape))
+        with tf.variable_scope('logits'):
+            print ("Shape of output states {}".format(output_states.h.shape))  # [batch_size, n_neurons]
+            M = tf.get_variable("M", shape=[self.n_neurons, 1],
+                                trainable=True,
+                                initializer=tf.truncated_normal_initializer())  # [n_neurons, 1]
+            print ("Shape of M {}".format(M.shape))
 
         self.logits = tf.matmul(output_states.h, M)
         print ("Shape of logits at inference {}".format(self.logits.shape))
@@ -148,7 +135,7 @@ def q(request):
     review = myQueryDict.__getitem__("user-stmt")
 
     model = SentimentModel(review)
-    driver = SentimentDriver(checkpoint_file=os.path.join(CURRENT_DIR, 'checkpoints/390.ckpt'),
+    driver = SentimentDriver(checkpoint_file=os.path.join(CURRENT_DIR, 'checkpoints/195.ckpt'),
                              tensorflow_model=model)
     start_time = time.time()
     prediction = driver.infer()
